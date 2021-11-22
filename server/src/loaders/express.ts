@@ -6,6 +6,10 @@ import cors from 'cors';
 import multer from 'multer';
 import BaseError from '../packages/error/error';
 
+import { PythonShell } from 'python-shell';
+import path from 'path';
+
+
 export default ({ app }: { app: express.Application }) => {
     app.use(cors(
         {
@@ -28,13 +32,20 @@ export default ({ app }: { app: express.Application }) => {
         res.send('THIS REALLY WORKED');
     });
 
-    app.get('/status', (req, res) => {
-        res.status(200).end();
+    app.get('/test', (req, res) => {
+        var dir = path.join(__dirname , "/../python_script")
+        PythonShell.run('script.py', {scriptPath: dir}, function (err, result) {
+            if (err) throw err;
+            console.log('finished');
+            console.log(result)
+            return res.send(result);
+        });
     });
 
     app.use(`/${process.env.UPLOAD_FOLDER}`, express.static(`${process.env.UPLOAD_FOLDER}`))
 
     app.use('/api', routes());
+
 
     app.use(function (error: Error, req, res, next) {
         // Gets called because of `wrapAsync()`
